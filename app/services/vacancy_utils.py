@@ -153,3 +153,126 @@ async def get_links_ids(
     except Exception as e:
         logger.error(f"Неожиданная ошибка при получении ID связей для object1 {object1}: {e}", exc_info=True)
         return ''
+
+
+async def add_skills_to_vacancies(
+        vacancies_data: list[dict],
+        request: Request
+) -> list[dict]:
+    """
+    Добавление данных навыков к данным вакансий.
+    Выполняет пакетные запросы к реестрам для минимизации сетевых вызовов.
+    """
+    try:
+        if not vacancies_data:
+            return []
+
+        vacancy_ids = [vacancy.get('id') for vacancy in vacancies_data if vacancy.get('id')]
+        if not vacancy_ids:
+            for vacancy in vacancies_data:
+                vacancy.setdefault('data', {})['skills'] = []
+            return vacancies_data
+
+        vacancy_ids_str = ','.join(str(v_id) for v_id in vacancy_ids)
+        links_params = {'object1': vacancy_ids_str}
+
+        try:
+            all_links_data = await interact_with_registry(
+                method=Method.GET,
+                request=request,
+                registry_url=settings.RECRUITMENT_REGISTRY_URL,
+                registry_name=RegistryName.LINKS,
+                params=links_params,
+                raise_not_found=False
+            )
+        except RegistryInteractionException as e:
+            logger.warning(f"Ошибка при получении связей для вакансий: {e}. Продолжаем без навыков.")
+            for vacancy in vacancies_data:
+                vacancy.setdefault('data', {})['skills'] = []
+            return vacancies_data
+
+        except Exception as e:
+            logger.error(f"Неожиданная ошибка при получении связей для вакансий: {e}", exc_info=True)
+            for vacancy in vacancies_data:
+                vacancy.setdefault('data', {})['skills'] = []
+            return vacancies_data
+
+        vacancy_to_skills = {v_id: [] for v_id in vacancy_ids}
+        if isinstance(all_links_data, list):
+            for link_item in all_links_data:
+                if isinstance(link_item, dict):
+                    meta = link_item.get('meta', {})
+                    if isinstance(meta, dict) and meta.get('status') == 'active':
+                        object1 = link_item.get('object1')
+                        object2 = link_item.get('object2')
+                        if object1 and object2 and object1 in vacancy_ids:
+                            vacancy_to_skills[object1].append(str(object2))
+
+        all_skill_ids = set()
+        for skill_ids in vacancy_to_skills.values():
+            all_skill_ids.update(skill_ids)
+
+        if not all_skill_ids:
+            for vacancy in vacancies_data:
+                vacancy_id = vacancy.get('id')
+                if vacancy_id:
+                    vacancy.setdefault('data', {})['skills'] = []
+            return vacancies_data
+
+        skill_ids_str = ','.join(all_skill_ids)
+        skills_params = {'id': skill_ids_str}
+
+        try:
+            all_skills_info = await interact_with_registry(
+                method=Method.GET,
+                request=request,
+                registry_url=settings.SKILLS_REGISTRY_URL,
+                registry_name=RegistryName.SKILLS,
+                params=skills_params
+            )
+        except RegistryInteractionException as e:
+            logger.warning(f"Ошибка при получении информации о навыках: {e}. Продолжаем без названий навыков.")
+            for vacancy in vacancies_data:
+                vacancy_id = vacancy.get('id')
+                if vacancy_id and vacancy_id in vacancy_to_skills:
+                    vacancy.setdefault('data', {})['skills'] = vacancy_to_skills[vacancy_id]
+            return vacancies_data
+
+        except Exception as e:
+            logger.error(f"Неожиданная ошибка при получении информации о навыках: {e}", exc_info=True)
+            for vacancy in vacancies_data:
+                vacancy_id = vacancy.get('id')
+                if vacancy_id and vacancy_id in vacancy_to_skills:
+                    vacancy.setdefault('data', {})['skills'] = vacancy_to_skills[vacancy_id]
+            return vacancies_data
+
+        skill_id_to_name = {}
+        if isinstance(all_skills_info, list):
+            for skill_item in all_skills_info:
+                if isinstance(skill_item, dict):
+                    skill_id = skill_item.get('id')
+                    skill_data = skill_item.get('data', {})
+                    if isinstance(skill_data, dict):
+                        skill_name = skill_data.get('title')
+                        if skill_id and skill_name:
+                            skill_id_to_name[str(skill_id)] = skill_name
+
+        for vacancy in vacancies_data:
+            vacancy_id = vacancy.get('id')
+            if vacancy_id and vacancy_id in vacancy_to_skills:
+                skill_ids_for_vacancy = vacancy_to_skills[vacancy_id]
+                skill_names = []
+                for skill_id in skill_ids_for_vacancy:
+                    skill_name = skill_id_to_name.get(skill_id, skill_id)
+                    skill_names.append(skill_name)
+                vacancy.setdefault('data', {})['skills'] = skill_names
+            else:
+                vacancy.setdefault('data', {})['skills'] = []
+
+        return vacancies_data
+
+    except Exception as e:
+        logger.error(f"Неожиданная ошибка в add_skills_to_vacancies_batch: {e}", exc_info=True)
+        for vacancy in vacancies_data:
+            vacancy.setdefault('data', {})['skills'] = []
+        return vacancies_data

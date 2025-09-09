@@ -12,7 +12,7 @@ from app.services.skill_utils import add_skills_to_vacancy, get_all_skills_from_
     process_skill
 from app.services.utils import HeaderAlias, Method, RegistryName
 from app.exceptions.main_exceptions import BadRequestException, NotFoundException, ServiceException, InternalException
-from app.services.vacancy_utils import create_vacancy
+from app.services.vacancy_utils import create_vacancy, add_skills_to_vacancies
 import logging
 
 
@@ -47,8 +47,7 @@ async def get_vacancies(
             logger.error(f"Ожидался список вакансий, но получен {type(vacancies_data)}")
             raise InternalException(message="Некорректный формат данных от реестра вакансий.")
 
-        tasks = [add_skills_to_vacancy(vacancy, request) for vacancy in vacancies_data]
-        full_vacancies_data = await asyncio.gather(*tasks)
+        full_vacancies_data = await add_skills_to_vacancies(vacancies_data, request)
 
         return SuccessfulResponse(
             detail=ResponseDetail(
