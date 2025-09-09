@@ -1,11 +1,23 @@
 from uuid import UUID
-from datetime import datetime
 from pydantic import BaseModel
 
-from app.schemas.base_schemas import RegistryObject
 
 
+class RegistryObject(BaseModel):
+    id: UUID | None = None
+    object_type: str | None = None
+    name: str | None = None
+    object_code: str | None = None
+    data: dict | None = None
+    meta: dict | None = None
+    project_id: UUID | None = None
+    account_id: UUID | None = None
+    user_id: UUID | None = None
+    object_item: UUID | None = None
+
+# Схема вакансии для записи в реестр
 class VacancyData(BaseModel):
+
     # Основная информация
     title: str
     short_description: str | None | None = None
@@ -17,9 +29,10 @@ class VacancyData(BaseModel):
     # Организация
     organization_name: str | None = None
     organization_description: str | None = None
+    organization_uuid: str | None = None
 
     # Навыки
-    skills: list[str] = []
+    # skills: list[str] | None = None
 
     # Локация
     country: str | None = None
@@ -33,17 +46,20 @@ class VacancyData(BaseModel):
     schedule: str | None = None
     experience_required: str | None = None
     education: str | None = None
+
     experience_level: str | None = None
 
     # Финансы
-    salary_from: float | None = None
-    salary_to: float | None = None
+    salary_from: str | None = None
+    salary_to: str | None = None
     currency: str | None = None
     salary_period: str | None = None
     taxes: bool | None = None
+    frequency: str | None = None
 
     # Дополнительно
     industry: str | None = None
+
     vacancy_url: str | None = None
     position: str | None = None
     vacancy_img: str | None = None
@@ -55,7 +71,7 @@ class VacancyData(BaseModel):
     contact_person_email: str | None = None
     contact_person_wa: str | None = None
     contact_person_tg: str | None = None
-    opened_date: datetime | None = None
+    opened_date: str | None = None
     deadline_date: str | None = None
 
     recruiter_name: str | None = None
@@ -64,8 +80,14 @@ class VacancyData(BaseModel):
     recruiter_wa: str | None = None
     recruiter_tg: str | None = None
 
-    budget_to: float | None = None
+    budget_to: str | None = None
     vacancy_status: str | None = None
+    responsible: str | None = None
+
+
+# Схема входных данных вакансии
+class VacancyInputData(VacancyData):
+    skills: list[str] | None = None
 
 
 class VacancyMetaData(BaseModel):
@@ -74,11 +96,14 @@ class VacancyMetaData(BaseModel):
     internal_id: int | None = None
 
 
+# Объект реестра вакансии
 class VacancyRegistryObject(RegistryObject):
-    data: VacancyData | None = None
+    data: VacancyInputData | None = None
     meta: VacancyMetaData | None = None
 
-class VacancyDataOptional(VacancyData):
+
+#=================== Схемы для обновления вакансии ======================
+class VacancyDataOptional(VacancyInputData):
     title: str | None = None
 
 

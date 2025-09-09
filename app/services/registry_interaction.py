@@ -7,9 +7,13 @@ from app.exceptions.main_exceptions import NotFoundException
 from app.exceptions.sub_exceptions.bad_request_exceptions import EntityExistsException
 from app.exceptions.sub_exceptions.failed_dependency_exceptions import RegistryInteractionException, \
     IncorrectFormatInRegistryException
+from app.schemas.vacancy_schemas import RegistryObject
+from app.schemas.link_schemas import LinkObject
 from app.exceptions.sub_exceptions.not_found_exceptions import RegistryObjectDeactivatedException
-from app.schemas.base_schemas import RegistryObject, LinkObject
 from app.services.utils import Method
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def interact_with_registry(
@@ -43,7 +47,7 @@ async def interact_with_registry(
             case (Method.DELETE):
                 response = await request_client.delete(registry_url)
     except Exception as e:
-        print(f"Ошибка в методе interact_with_registry.\n"
+        logger.error(f"Ошибка в методе interact_with_registry.\n"
               f"Тип исключения: {type(e).__name__}\nСообщение: {str(e)}\n"
               f"Объект: {data}")
         raise RegistryInteractionException(registry_error=str(e))
@@ -51,7 +55,7 @@ async def interact_with_registry(
     try:
         response_data = response.json()
     except Exception as e:
-        print(f"Ошибка в методе interact_with_registry.\n"
+        logger.error(f"Ошибка в методе interact_with_registry.\n"
               f"Тип исключения: {type(e).__name__}\nСообщение: {str(e)}\n"
               f"Объект: {data}")
         raise IncorrectFormatInRegistryException

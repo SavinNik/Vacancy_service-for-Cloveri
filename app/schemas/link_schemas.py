@@ -1,6 +1,20 @@
 from pydantic import BaseModel
-from app.schemas.base_schemas import LinkObject
 from uuid import UUID
+
+
+class LinkObject(BaseModel):
+    id: UUID | None = None
+    link_type: str | None = None
+    link_code: str | None = None
+    object1: UUID | None = None
+    object2: UUID | None = None
+    weight: float | None = None
+    direction: int | None = None
+    data: dict | None = None
+    project_id: UUID | None = None
+    account_id: UUID | None = None
+    user_id: UUID | None = None
+    meta: dict | None = None
 
 
 class VacancySkillData(BaseModel):
@@ -8,13 +22,20 @@ class VacancySkillData(BaseModel):
     experience_required: str | None = None
 
 
-class VacancySkillLink(LinkObject):
-    data: VacancySkillData
+class VacancySkillLinkRegistryObject(BaseModel):
+    id: UUID | None = None
+    link_type: str | None = None
+    link_code: str | None = None
+    object1: UUID | None = None
+    object2: UUID | None = None
+    weight: float | None = None
+    direction: int | None = None
+    data: VacancySkillData | None = None
+    project_id: UUID | None = None
+    account_id: UUID | None = None
+    user_id: UUID | None = None
+    meta: dict | None = None
 
 
-class VacancySkillLinkInputData(BaseModel):
-    link_id: UUID | None = None
-    vacancy_id: UUID
-    skill_id: UUID
-    link_weight: float | None = 0
-    project_id: UUID | None
+
+

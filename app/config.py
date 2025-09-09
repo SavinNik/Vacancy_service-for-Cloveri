@@ -3,8 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     RECRUITMENT_REGISTRY_URL: str
-    BASIS_URL: str
-    UPLOAD_TO_BASIS_URL: str
+    SKILLS_REGISTRY_URL: str
     PROJECT_ID: str
 
     # AUTH_PATH: str
@@ -24,5 +23,4 @@ method_to_function_map = {
     "GET_VACANCY": 'get_vacancy',
     "POST_VACANCY": 'create_vacancy',
     "PATCH_VACANCY": 'update_vacancy',
-
 }

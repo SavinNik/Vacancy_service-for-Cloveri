@@ -12,7 +12,7 @@ class Method(IntEnum):
 
 
 class HeaderAlias(StrEnum):
-    PROJECT_ID = "Project_id"
+    PROJECT_ID = "Project-ID"
     # AUTHORIZATION = "Authorization"
 
 
@@ -20,16 +20,20 @@ class RegistryName(StrEnum):
     RECRUITMENT = "recruitment"
     RECRUITMENTS = "recruitments"
 
+    SKILL = "skill"
     SKILLS = "skills"
 
-
-class Handle(StrEnum):
-    RECRUITMENT = "recruitment"
-    RECRUITMENT_ID = "recruitment/{id}"
+    LINK = "link"
+    LINKS = "links"
 
 
-    def resolve(self, **kwargs):
-        return self.value.format(**kwargs)
+# class Handle(StrEnum):
+#     RECRUITMENT = "recruitment"
+#     RECRUITMENT_ID = "recruitment/{id}"
+#
+#
+#     def resolve(self, **kwargs):
+#         return self.value.format(**kwargs)
 
 
 def get_public_key() -> bytes:

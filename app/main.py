@@ -1,28 +1,33 @@
 import httpx
 import uvicorn
+import logging
 
-from fastapi import FastAPI, status
-from fastapi.exceptions import RequestValidationError
-from fastapi.encoders import jsonable_encoder
+from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from app.config import settings
 # from app.services.auth import parse_auth
 from app.routers.vacancy_methods import router as vacancy_router
 from app.routers.vacancies_methods import router as vacancies_router
-from app.schemas.response_schemas import ResponseDetail, ExceptionDetail
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.requests_client = httpx.AsyncClient(timeout=20)
     # app.state.auth_config = parse_auth()
-    print("Service startup...")
+    logger.info("Service startup...")
     yield
     await app.requests_client.aclose()
+    logger.info("Service shutdown...")
 
 
 app = FastAPI(
@@ -46,23 +51,11 @@ app.add_middleware(
 )
 
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
-    error_type = exc.errors()[0].get('type')
-    location = exc.errors()[0].get('loc')
-    message = exc.errors()[0].get('msg')
-    request_input = exc.errors()[0].get('input')
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content=jsonable_encoder(
-            ExceptionDetail(
-                detail=ResponseDetail(
-                    code="BAD_REQUEST",
-                    message=f'Type: {error_type}, location: {location}. {message}. Input: {request_input}'
-                )
-            )
-        )
-    )
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    logger.error(f"Глобальный обработчик исключений: {exc}", exc_info=True)
+    raise exc
+
 
 if __name__ == '__main__':
     uvicorn.run(
