@@ -101,8 +101,8 @@ async def update_vacancy_by_id(
     try:
         vacancy_update_dict = vacancy_update_data.model_dump(exclude_unset=True)
 
-        if 'skills' in vacancy_update_dict:
-            vacancy_update_skills = get_skills_from_vacancy(vacancy_update_dict)
+        if 'skills' in vacancy_update_dict.get('data'):
+            vacancy_update_skills = get_skills_from_vacancy(vacancy_update_dict.get('data', {}))
 
             old_links_ids = await get_links_ids(
                 request=request,
@@ -115,7 +115,7 @@ async def update_vacancy_by_id(
                     request=request,
                     registry_url=settings.RECRUITMENT_REGISTRY_URL,
                     registry_name=RegistryName.LINKS,
-                    params={"id": old_links_ids}
+                    params={'id': old_links_ids}
                 )
 
             registry_skills = await get_all_skills_from_registry(

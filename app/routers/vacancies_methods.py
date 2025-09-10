@@ -8,7 +8,7 @@ from app.schemas.response_schemas import SuccessfulResponse, ResponseDetail
 from app.schemas.vacancy_schemas import VacancyInputData
 
 from app.services.registry_interaction import interact_with_registry
-from app.services.skill_utils import add_skills_to_vacancy, get_all_skills_from_registry, get_skills_from_vacancy, \
+from app.services.skill_utils import get_all_skills_from_registry, get_skills_from_vacancy, \
     process_skill
 from app.services.utils import HeaderAlias, Method, RegistryName
 from app.exceptions.main_exceptions import BadRequestException, NotFoundException, ServiceException, InternalException

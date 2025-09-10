@@ -141,7 +141,7 @@ async def get_links_ids(
             logger.error(f"Ожидался список связей от реестра, но получен {type(links_data)}")
             return ''
 
-        links_ids = ', '.join([
+        links_ids = ','.join([
             item['id']
             for item in links_data
             if isinstance(item, dict) and 'id' in item and item['meta']['status'] == 'active'

@@ -22,7 +22,7 @@ async def interact_with_registry(
     registry_url: str,
     registry_name: str,
     _id: UUID = None,
-    params: dict = None,
+    params: dict | str = None,
     data: RegistryObject | LinkObject | list | dict = None,
     active_records: bool = True,
     raise_not_found: bool = True
@@ -45,7 +45,7 @@ async def interact_with_registry(
             case (Method.PATCH):
                 response = await request_client.patch(registry_url, json=data)
             case (Method.DELETE):
-                response = await request_client.delete(registry_url)
+                response = await request_client.delete(registry_url, params=params)
     except Exception as e:
         logger.error(f"Ошибка в методе interact_with_registry.\n"
               f"Тип исключения: {type(e).__name__}\nСообщение: {str(e)}\n"
