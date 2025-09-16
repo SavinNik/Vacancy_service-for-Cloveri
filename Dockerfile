@@ -57,5 +57,5 @@ ENV PYTHONUNBUFFERED 1
 LABEL app.version="${BUILD_VERSION}"
 
 # Запуск
-ENTRYPOINT ["uvicorn", "app.main:app", "--host", "0.0.0.0"]
+ENTRYPOINT ["uvicorn", "a.main:app", "--host", "0.0.0.0"]
 CMD ["--port", "80", "--proxy-headers"]
